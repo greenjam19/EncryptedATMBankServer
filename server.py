@@ -6,7 +6,7 @@ import socket
 def main():
 	#static variables
 	HOST = "127.0.0.1"
-	PORT = 42069
+	PORT = 65432
 
 	# No need to call s.close() here, as everything is done in a with
 	# statement
@@ -19,10 +19,14 @@ def main():
 		print("SERVER: Blocked on accept")
 		conn, addr = s.accept()
 		with conn:
-			print("SERVER: Connected to {}", addr)
+			print("SERVER: Connected to", addr, "(localhost)")
 			while(1):
 				data = conn.recv(512)
-				if(!data):
+				if not data:
 					break
-				print("SERVER: Received {}", data)
-				conn.sendall(data)
+				data = data.decode()
+				print("SERVER: Received", data)
+				conn.sendall(data.encode('UTF-8'))
+
+if __name__ == "__main__":
+	main()
