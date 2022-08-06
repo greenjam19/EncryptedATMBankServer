@@ -2,15 +2,21 @@
 
 #imports
 import socket
+import os
+import cert
 
 def main():
 	#static variables
 	HOST = "127.0.0.1"
 	PORT = 65432
+	identification = os.getpid()
+	bank_public_key = 27
+	bank_cert = cert.certificate(-1, None, identification, bank_public_key)
 
 	# non-static variables
 	balance = 0
 
+	print("SERVER: Bank ID is", identification)
 	# No need to call s.close() here, as everything is done in a with
 	# statement
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
