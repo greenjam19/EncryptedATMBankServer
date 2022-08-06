@@ -58,10 +58,16 @@ def main():
 				continue
 
 			s.sendall(transmission.lower().encode('UTF-8'))
-			data = s.recv(512).decode()
-			if(data == "Quit"):
+			data = s.recv(512).decode().split()
+			if(data[0] == "Quit"):
 				break
-			print("Received", data)
+			elif(data[0] == "Warning"):
+				print("Received", data[0])
+				if(data[1] == "NEC"):
+					print("Client has insifficient capital to complete this withdrawl")
+			else:
+				print("Received", data[0])
+				print("Client has", data[1], "dollars remaining in account")
 
 if __name__ == "__main__":
 	main()

@@ -37,17 +37,20 @@ def main():
 					print("SERVER: Received", data)
 					if(lis[0] == "deposit"):
 						balance += int(lis[1])
-						returnable += "Success"
+						returnable += "Success "
+						returnable += str(balance)
 					elif(lis[0] == "withdraw"):
 						if(balance - int(lis[1]) < 0):
 							print("WARNING: Not enough capital in account to make withdrawl")
-							returnable += "Warning"
+							returnable += "Warning NEC"
 						else:
-							balance +- int(lis[1])
-							returnable += "Success"
+							balance -= int(lis[1])
+							returnable += "Success "
+							returnable += str(balance)
 					elif(lis[0] == "check"):
-						print("SERVER: Client has", balance, " dollars remaining in account")
-						returnable += "Success"
+						print("SERVER: Client has", balance, "dollars remaining in account")
+						returnable += "Success "
+						returnable += str(balance)
 				conn.sendall(returnable.encode("UTF-8"))
 
 if __name__ == "__main__":
