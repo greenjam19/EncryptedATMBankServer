@@ -17,8 +17,6 @@ def main():
 	# static variables
 	HOST = "127.0.0.1"
 	PORT = 65432
-	e = 0
-	N = 0
 
 	# non-static variables
 	authenticated = False
@@ -30,6 +28,16 @@ def main():
 		lines = f.readlines()
 		e = int(lines[0])
 		N = int(lines[1])
+		# PUBLIC KEY: {e, N}
+		server_public = (e, N)
+
+	with open("privatekey.txt", "r") as f:
+		lines = f.readlines()
+		d = int(lines[0])
+		p = int(lines[1])
+		q = int(lines[2])
+		# PRIVATE KEY: {d, p, q}
+		client_private = (d, p, q)
 
 	###################
 	#BAKING OPERATIONS#

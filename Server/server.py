@@ -9,9 +9,6 @@ def main():
 	#static variables
 	HOST = "127.0.0.1"
 	PORT = 65432
-	d = 0
-	p = 0
-	q = 0
 
 
 	# non-static variables
@@ -26,6 +23,15 @@ def main():
 		d = int(lines[0])
 		p = int(lines[1])
 		q = int(lines[2])
+		# PRIVATE KEY: {d, p, q}
+		server_private = (d, p, q)
+
+	with open("publickey.txt", "r") as f:
+		lines = f.readlines()
+		e = int(lines[0])
+		N = int(lines[1])
+		# PUBLIC KEY: {e, N}
+		client_public = (e, N)
 
 
 	####################
