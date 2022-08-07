@@ -37,7 +37,7 @@ def isProbablePrime(n):
             return candidate
 
 def mrTrialBasic(candidate):
-    #Using the miller-rabin algorithm to check if a number is probably prime
+        #Using the miller-rabin algorithm to check if a number is probably prime
         #a^(p-1) mod p = 1 true if p is prime (Fermat's)
         # We will run 15 iterations of this test
         ec = candidate - 1
@@ -56,9 +56,9 @@ def mrTrialBasic(candidate):
                     return False
             return True
         
-        # Because of this, we run trial 50 times so there is a very small change
+        # Because of this, we run trial 15 times so there is a very small change
         # the number is psuedo-prime
-        for i in range(1):
+        for i in range(15):
             ro_candidate = random.randrange(2, candidate)
             if(basicTrial(ro_candidate)):
                 return False
@@ -90,15 +90,11 @@ def getDecryptionKey(e, phi_mod):
 def generateRSAkeys(n):
     # Generating 1024 bit p and q values
     prime1 = generateNBitPrime(n)
-    #prime1_bin = bin(prime1)
-    #print("Prime1 binary", prime1_bin)
 
     prime2 = generateNBitPrime(n)
-    #prime2_bin = bin(prime2)
-    #print("Prime2 binary", prime2_bin)
 
     modulus = prime1 * prime2
-    phi_modulus = (prime1-1) * (prime2-2)
+    phi_modulus = (prime1-1) * (prime2-1)
 
     e = getEncryptionKey(phi_modulus)
     d = getDecryptionKey(e, phi_modulus)
