@@ -19,21 +19,6 @@ def main():
 	#######
 	#SETUP#
 	#######
-
-	CA_PORT = 65433
-	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-		#Connecting to certificate authority
-		s.connect((HOST, CA_PORT))
-
-		#Communicating with the cert authority:
-		while(1):
-			data = input("What to say to CA?")
-			s.sendall(data.encode("UTF-8"))
-			data = s.recv(512).decode()
-			print("SERVER: Received", data, "from CA")
-			if(data == "Quit"):
-				break
-
 		
 
 	# No need to call s.close() here, as everything is done in a with
