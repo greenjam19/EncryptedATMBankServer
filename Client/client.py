@@ -53,10 +53,6 @@ def main():
 		# PRIVATE KEY: {d, p, q}
 		client_private = (d, p, q)
 
-	###################
-	#BAKING OPERATIONS#
-	###################
-
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		# Authentication steps
 		s.connect((HOST, PORT))
@@ -66,6 +62,11 @@ def main():
 		# w/ the bank
 		while(1):
 			if not authenticated:
+
+				###########
+				#HANDSHAKE#
+				###########
+
 				# Client_hello
 				# Usage <Hello/TLS/RSA/DES
 				msg = "Hello TLS RSA DES"
@@ -102,6 +103,11 @@ def main():
 				authenticated = True
 
 			else:
+
+				###################
+				#BAKING OPERATIONS#
+				###################
+
 				# Use sendall to send messages to server (bank)
 				print("USAGE: <Withdraw/Deposit/Check/Quit>")
 				print("")

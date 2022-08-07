@@ -47,11 +47,6 @@ def main():
 		# PUBLIC KEY: {e, N}
 		client_public = (e, N)
 
-
-	####################
-	#BANKING OPERATIONS#
-	####################
-
 	# No need to call s.close() here, as everything is done in a with
 	# statement
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -66,6 +61,11 @@ def main():
 			print("SERVER: Connected to", addr, "(localhost)")
 			while(1):
 				if not authenticated:
+
+					###########
+					#HANDSHAKE#
+					###########
+
 					returnable = ""
 					#Client_hello
 					data = conn.recv(512)
@@ -103,6 +103,11 @@ def main():
 						authenticated = True
 
 				else:
+
+					####################
+					#BANKING OPERATIONS#
+					####################
+
 					data = conn.recv(512)
 					if not data:
 						break
