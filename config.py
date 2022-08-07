@@ -15,14 +15,21 @@ low_primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
               433, 439, 443, 449, 457, 461, 463, 
               467, 479, 487, 491, 499]
 
+# Using euclid to find GCD
+def gcd(p, q):
+    if(q == 0):
+        return abs(p)
+    else:
+        return gcd(q, p % q)
+
 def genLargeNum(n):
     # Picking random number in range (2^(n-1) + 1, 2^n - 1)
     randnum = random.randrange(2**(n-1)+1, 2**n-1)
     return randnum
 
-def isProbablePrime():
+def isProbablePrime(n):
     while(1):
-        candidate = genLargeNum(1024)
+        candidate = genLargeNum(n)
         for i in low_primes:
             if candidate % i == 0 and i**2 <= candidate:
                 break
@@ -60,25 +67,58 @@ def mrTrialBasic(candidate):
 
 def generateNBitPrime(n):
     while(1):
-        probable_prime = isProbablePrime()
+        probable_prime = isProbablePrime(n)
         if not mrTrialBasic(probable_prime):
             continue
-        print(probable_prime, "is most likely prime")
+        #print(probable_prime, "is most likely prime")
         return probable_prime
+
+def getEncryptionKey(phi_mod):
+    #selecting (randomly) the encryption key e
+    e = 0
+    while(1):
+        e = random.randrange(1, phi_mod)
+        if(gcd(e, phi_mod) == 1):
+            return e
+
+def getDecryptionKey(e, phi_mod):
+    d = pow(e, -1, phi_mod)
+    assert((e*d) % phi_mod == 1)
+    return d
 
 # Function to generate public/private keys
 def generateRSAkeys(n):
     # Generating 1024 bit p and q values
     prime1 = generateNBitPrime(n)
-    prime1_bin = bin(prime1)
-    print("Prime1 binary", prime1_bin)
+    #prime1_bin = bin(prime1)
+    #print("Prime1 binary", prime1_bin)
 
     prime2 = generateNBitPrime(n)
-    prime2_bin = bin(prime2)
-    print("Prime2 binary", prime2_bin)
+    #prime2_bin = bin(prime2)
+    #print("Prime2 binary", prime2_bin)
+
+    modulus = prime1 * prime2
+    phi_modulus = (prime1-1) * (prime2-2)
+
+    e = getEncryptionKey(phi_modulus)
+    d = getDecryptionKey(e, phi_modulus)
+
+    f = open("Client/publickey.txt", "w")
+    f.write(str(e))
+    f.write('\n')
+    f.write(str(modulus))
+    f.close()
+
+    f = open("Server/privatekey.txt", "w")
+    f.write(str(d))
+    f.write('\n')
+    f.write(str(prime1))
+    f.write('\n')
+    f.write(str(prime2))
+    f.close()
 
 def main():
-    generateRSAkeys(1024)
+    generateRSAkeys(768)
 
 if __name__ == "__main__":
     main();
