@@ -174,9 +174,11 @@ def makeBlocks(string, n):
     for i in range(n,bits.length, n):
         blocks.append(bits[last:i])
         last = i
+    #print(last, bits.length)
     if (last < bits.length):
         finalBlock = bits[last:]
-        finalBlock += BitArray(uint = 0, length = n - finalBlock.length)
+        if n - finalBlock.length > 0:
+           finalBlock += BitArray(uint = 0, length = n - finalBlock.length)
         blocks.append(finalBlock)
     
     #print(blocks[-1].bin)
