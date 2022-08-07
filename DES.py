@@ -6,6 +6,8 @@ Created on Fri Aug  5 20:45:26 2022
 """
 
 from bitstring import BitArray
+import random
+import time
 
 #initial permutation 
 IP = (
@@ -237,19 +239,45 @@ def decodeDES(ciphertext, key, rounds):
         plaintext.append(applyPermutation(block, IP_1))
     return plaintext
 
-plaintext = "deposit 10000 dollars" 
-key = BitArray(bin = '0000000000000000000000000000000000000000000000000000000000000000')
+#key is 192 bits long
+def encodeTripleDES(plaintext, key):
+    blocks = makeBlocks(plaintext, 64)
+    key1 = key[:64]
+    key2 = key[64:128]
+    key3 = key[128:]
+    
+    blocks = encodeDES(blocks, key1, 16)
+    blocks = decodeDES(blocks, key2, 16)
+    blocks = encodeDES(blocks, key3, 16)
+    
+    return blocks
 
-blocks = makeBlocks(plaintext, 64)
-ciphertext = encodeDES(blocks, key, 16)
-decoded = decodeDES(ciphertext, key, 16)
+def decodeTripleDES(plaintext, key):
+    key1 = key[:64]
+    key2 = key[64:128]
+    key3 = key[128:]
+    
+    blocks = plaintext
+    
+    blocks = decodeDES(blocks, key3, 16)
+    blocks = encodeDES(blocks, key2, 16)
+    blocks = decodeDES(blocks, key1, 16)
+    
+    return blocks
 
-print([i.bin for i in blocks])
-print([i.bin for i in ciphertext])
-print([i.bin for i in decoded])
+#generate an n-bit random key
+def generateRandomKey(n):
+    key = BitArray(uint = 0, length = n)
+    random.seed(time.time_ns() % 100000)
+    for i in range(n // 2):
+        if (random.randint(0,1) == 1):
+            key[i] = True
+    random.seed(time.time_ns() % 100000)
+    for i in range(n//2, n):
+        if (random.randint(0,1) == 1):
+            key[i] = True
+    
+    return key
 
-print(blocksToString(blocks))
-print(blocksToString(ciphertext))
-print(blocksToString(decoded))
 
 
