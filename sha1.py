@@ -1,4 +1,5 @@
-from random import * 
+from bitstring import BitArray
+
 def Hash(message):
     def XOR_4(word1, word2, word3, word4):
         xor_ = []
@@ -82,6 +83,23 @@ def Hash(message):
 
     return HASH_VALUE
 
+#can be tested at https://www.freeformatter.com/hmac-generator.html#before-output
+#key is 64 bits
+def HMAC(message, key):
+    opad = BitArray(bin = "01011100" * 8) 
+    ipad = BitArray(bin = "00110110" * 8)
+    
+    
+    a = (key ^ opad)
+    b = (key ^ ipad)
+    value = Hash(b.bin + message)
+    
+    return Hash(a.bin + value)
+    
+    
+    
+    
+
 def main():
     """Is currently encoding the string "A Test" """
     hash1 = Hash('010000010010000001010100011001010111001101110100')
@@ -95,7 +113,10 @@ def main():
 
     assert(hash1 == exp1)
     assert(hash2 == exp2)
-
+    
+    h = HMAC("010000010010000001010100011001010111001101110100", BitArray(uint = 0, length = 64))
+    print(h)
+    
 if __name__ == "__main__":
     main()
 
