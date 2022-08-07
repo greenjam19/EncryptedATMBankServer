@@ -2,6 +2,20 @@
 
 #imports
 import socket
+import math
+
+def RSA_encrypt(public_key, message):
+	message = int.from_bytes(message.encode(), byteorder = 'little')
+	ciphertext = pow(message, public_key[0], public_key[1])
+	len = math.ceil(ciphertext.bit_length() / 8)
+	return ciphertext.to_bytes(len, byteorder = 'little')
+
+def RSA_decrypt(private_key, msg):
+	msg = int.from_bytes(msg, 'little', signed = False)
+	message = pow(msg, private_key[0], private_key[1] * private_key[2])
+	len = math.ceil(message.bit_length() / 8)
+	message = message.to_bytes(len, byteorder = 'little').decode()
+	return(message)
 
 def check_int(d_w):
 	st = "How much would you like to " + d_w + "?\n"
@@ -54,24 +68,33 @@ def main():
 			if not authenticated:
 				# Client_hello
 				# Usage <Hello/TLS/RSA/DES
-				s.sendall(b"Hello TLS RSA DES")
+				msg = "Hello TLS RSA DES"
+				msg_encrypted = RSA_encrypt(server_public, msg)
+				s.sendall(msg_encrypted)
 
 				# Server_hello
-				data = s.recv(512).decode().split()
+				data = s.recv(512)
+				message = RSA_decrypt(client_private, data)
+				data = message.split()
 				if(data[0] != "Success"):
 					print("ERROR: Incompatable securities. Exiting...")
 					return 1
 				print("CLIENT: Established security capabilities")
 
 				# Server_key_exchange
-				data = s.recv(512).decode().split()
+				data = s.recv(512)
+				message = RSA_decrypt(client_private, data)
+				data = message.split()
 				print("CLIENT: Received symmetric key", data[0])
 
 				# Client_key_auth
-				s.sendall(data[0].encode("UTF-8"))
+				msg_encrypted = RSA_encrypt(server_public, data[0])
+				s.sendall(msg_encrypted)
 
 				#Server_verify_goodbye
-				data = s.recv(512).decode().split()
+				data = s.recv(512)
+				message = RSA_decrypt(client_private, data)
+				data = message.split()
 				if(data[0] != "Success"):
 					print("ERROR: Fraudulent messaging detected. Exiting...")
 					return 1

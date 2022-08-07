@@ -4,6 +4,20 @@
 import socket
 import os
 import random
+import math
+
+def RSA_decrypt(private_key, msg):
+	msg = int.from_bytes(msg, 'little', signed = False)
+	message = pow(msg, private_key[0], private_key[1] * private_key[2])
+	len = math.ceil(message.bit_length() / 8)
+	message = message.to_bytes(len, byteorder = 'little').decode()
+	return(message)
+
+def RSA_encrypt(public_key, message):
+	message = int.from_bytes(message.encode(), byteorder = 'little')
+	ciphertext = pow(message, public_key[0], public_key[1])
+	len = math.ceil(ciphertext.bit_length() / 8)
+	return ciphertext.to_bytes(len, byteorder = 'little')
 
 def main():
 	#static variables
@@ -54,27 +68,34 @@ def main():
 				if not authenticated:
 					returnable = ""
 					#Client_hello
-					data = conn.recv(512).decode().split()
+					data = conn.recv(512)
+					message = RSA_decrypt(server_private, data)
+					data = message.split()
 					if(data[0] != "Hello" or data[1] != "TLS" or data[2] \
 						!= "RSA" or data[3] != "DES"):
 						returnable += "Failure"
 					else:
 						returnable += "Success"
 					#Server_hello
-					conn.sendall(returnable.encode("UTF-8"))
+					msg_encrypted = RSA_encrypt(client_public, returnable)
+					conn.sendall(msg_encrypted)
 
 					#Server_symmetric_key
 					returnable = str(random.getrandbits(192))
-					conn.sendall(returnable.encode("UTF-8"))
+					msg_encrypted = RSA_encrypt(client_public, returnable)
+					conn.sendall(msg_encrypted)
 
-					data = conn.recv(512).decode().split()
+					data = conn.recv(512)
+					message = RSA_decrypt(server_private, data)
+					data = message.split()
 					if(data[0] != returnable):
 						returnable = "Failure"
 
 					else:
 						returnable = "Success"
 					#Server_verify_goodbye
-					conn.sendall(returnable.encode("UTF-8"))
+					msg_encrypted = RSA_encrypt(client_public, returnable)
+					conn.sendall(msg_encrypted)
 					if(returnable == "Failure"):
 						print("SERVER: Fraudulent Behavior. Exiting...")
 						return 1
