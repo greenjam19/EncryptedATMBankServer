@@ -44,6 +44,31 @@ def main():
 		# w/ the bank
 		while(1):
 			if not authenticated:
+				# Client_hello
+				# Usage <Hello/TLS/RSA/DES
+				s.sendall(b"Hello TLS RSA DES")
+
+				# Server_hello
+				data = s.recv(512).decode().split()
+				if(data[0] != "Success"):
+					print("ERROR: Incompatable securities. Exiting...")
+					return 1
+				print("CLIENT: Established security capabilities")
+
+				# Server_key_exchange
+				data = s.recv(512).decode().split()
+				print("CLIENT: Received symmetric key", data[0])
+
+				# Client_key_auth
+				s.sendall(data[0].encode("UTF-8"))
+
+				#Server_verify_goodbye
+				data = s.recv(512).decode().split()
+				if(data[0] != "Success"):
+					print("ERROR: Fraudulent messaging detected. Exiting...")
+					return 1
+				print("CLIENT: Authenticated")
+				authenticated = True
 
 			else:
 				# Use sendall to send messages to server (bank)
@@ -89,5 +114,6 @@ def main():
 					print("Received", data[0])
 					print("Client has", data[1], "dollars remaining in account")
 
+	return 0
 if __name__ == "__main__":
 	main()

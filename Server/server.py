@@ -3,6 +3,7 @@
 #imports
 import socket
 import os
+import random
 
 def main():
 	#static variables
@@ -44,37 +45,68 @@ def main():
 		with conn:
 			print("SERVER: Connected to", addr, "(localhost)")
 			while(1):
-				data = conn.recv(512)
-				if not data:
-					break
-				data = data.decode()
-				lis = data.split()
-				returnable = ""
 				if not authenticated:
-					print(lis[0])
-				else:
-					if(lis[0] == "quit"):
-						print("SERVER: Received quit request from ATM. Exiting...")
-						returnable += "Quit"
+					returnable = ""
+					#Client_hello
+					data = conn.recv(512).decode().split()
+					if(data[0] != "Hello" or data[1] != "TLS" or data[2] \
+						!= "RSA" or data[3] != "DES"):
+						returnable += "Failure"
 					else:
-						print("SERVER: Received", data)
-						if(lis[0] == "deposit"):
-							balance += int(lis[1])
-							returnable += "Success "
-							returnable += str(balance)
-						elif(lis[0] == "withdraw"):
-							if(balance - int(lis[1]) < 0):
-								print("WARNING: Not enough capital in account to make withdrawl")
-								returnable += "Warning NEC"
-							else:
-								balance -= int(lis[1])
+						returnable += "Success"
+					#Server_hello
+					conn.sendall(returnable.encode("UTF-8"))
+
+					#Server_symmetric_key
+					returnable = str(random.getrandbits(192))
+					conn.sendall(returnable.encode("UTF-8"))
+
+					data = conn.recv(512).decode().split()
+					if(data[0] != returnable):
+						returnable = "Failure"
+
+					else:
+						returnable = "Success"
+					#Server_verify_goodbye
+					conn.sendall(returnable.encode("UTF-8"))
+					if(returnable == "Failure"):
+						print("SERVER: Fraudulent Behavior. Exiting...")
+						return 1
+					else:
+						authenticated = True
+
+				else:
+					data = conn.recv(512)
+					if not data:
+						break
+					data = data.decode()
+					lis = data.split()
+					returnable = ""
+					if not authenticated:
+						print(lis[0])
+					else:
+						if(lis[0] == "quit"):
+							print("SERVER: Received quit request from ATM. Exiting...")
+							returnable += "Quit"
+						else:
+							print("SERVER: Received", data)
+							if(lis[0] == "deposit"):
+								balance += int(lis[1])
 								returnable += "Success "
 								returnable += str(balance)
-						elif(lis[0] == "check"):
-							print("SERVER: Client has", balance, "dollars remaining in account")
-							returnable += "Success "
-							returnable += str(balance)
-					conn.sendall(returnable.encode("UTF-8"))
+							elif(lis[0] == "withdraw"):
+								if(balance - int(lis[1]) < 0):
+									print("WARNING: Not enough capital in account to make withdrawl")
+									returnable += "Warning NEC"
+								else:
+									balance -= int(lis[1])
+									returnable += "Success "
+									returnable += str(balance)
+							elif(lis[0] == "check"):
+								print("SERVER: Client has", balance, "dollars remaining in account")
+								returnable += "Success "
+								returnable += str(balance)
+						conn.sendall(returnable.encode("UTF-8"))
 
 if __name__ == "__main__":
 	main()
