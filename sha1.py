@@ -92,9 +92,12 @@ def HMAC(message, key):
     
     a = (key ^ opad)
     b = (key ^ ipad)
-    value = Hash(b.bin + message)
+    right = b.bin + message
+    value = Hash(right)
+    newvalue = BitArray(uint = int(value,16), length = len(value) * 8)
     
-    return Hash(a.bin + value)
+    left = a.bin + newvalue.bin
+    return Hash(left)
     
     
     
@@ -114,7 +117,9 @@ def main():
     assert(hash1 == exp1)
     assert(hash2 == exp2)
     
-    h = HMAC("010000010010000001010100011001010111001101110100", BitArray(uint = 0, length = 64))
+    #print(Hash("0011011000110110001101100011011000110110001101100011011000110110010000010010000001010100011001010111001101110100"))
+    
+    h = HMAC(BitArray(uint = ord("a"), length = 8).bin, BitArray(uint = 2**64-1, length = 64))
     print(h)
     
 if __name__ == "__main__":
