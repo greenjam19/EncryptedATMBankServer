@@ -100,13 +100,13 @@ def generateRSAkeys(n):
     e = getEncryptionKey(phi_modulus)
     d = getDecryptionKey(e, phi_modulus)
 
-    f = open("Client/publickey.txt", "w")
+    f = open("ServerPublicKey.txt", "w")
     f.write(str(e))
     f.write('\n')
     f.write(str(modulus))
     f.close()
 
-    f = open("Server/privatekey.txt", "w")
+    f = open("ServerPrivateKey.txt", "w")
     f.write(str(d))
     f.write('\n')
     f.write(str(prime1))
@@ -126,13 +126,13 @@ def generateRSAkeys(n):
     e = getEncryptionKey(phi_modulus)
     d = getDecryptionKey(e, phi_modulus)
 
-    f = open("Server/publickey.txt", "w")
+    f = open("ClientPublicKey.txt", "w")
     f.write(str(e))
     f.write('\n')
     f.write(str(modulus))
     f.close()
 
-    f = open("Client/privatekey.txt", "w")
+    f = open("ClientPrivateKey.txt", "w")
     f.write(str(d))
     f.write('\n')
     f.write(str(prime1))

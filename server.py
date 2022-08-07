@@ -32,7 +32,7 @@ def main():
 	#######
 	#SETUP#
 	#######
-	with open("privatekey.txt", "r") as f:
+	with open("ServerPrivateKey.txt", "r") as f:
 		lines = f.readlines()
 		d = int(lines[0])
 		p = int(lines[1])
@@ -40,7 +40,7 @@ def main():
 		# PRIVATE KEY: {d, p, q}
 		server_private = (d, p, q)
 
-	with open("publickey.txt", "r") as f:
+	with open("ClientPublicKey.txt", "r") as f:
 		lines = f.readlines()
 		e = int(lines[0])
 		N = int(lines[1])
