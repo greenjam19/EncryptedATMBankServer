@@ -88,6 +88,7 @@ def getDecryptionKey(e, phi_mod):
 
 # Function to generate public/private keys
 def generateRSAkeys(n):
+    # SERVER PUBLIC
     # Generating 1024 bit p and q values
     prime1 = generateNBitPrime(n)
 
@@ -106,6 +107,32 @@ def generateRSAkeys(n):
     f.close()
 
     f = open("Server/privatekey.txt", "w")
+    f.write(str(d))
+    f.write('\n')
+    f.write(str(prime1))
+    f.write('\n')
+    f.write(str(prime2))
+    f.close()
+
+    # CLIENT PUBLIC
+    # Generating 1024 bit p and q values
+    prime1 = generateNBitPrime(n)
+
+    prime2 = generateNBitPrime(n)
+
+    modulus = prime1 * prime2
+    phi_modulus = (prime1-1) * (prime2-1)
+
+    e = getEncryptionKey(phi_modulus)
+    d = getDecryptionKey(e, phi_modulus)
+
+    f = open("Server/publickey.txt", "w")
+    f.write(str(e))
+    f.write('\n')
+    f.write(str(modulus))
+    f.close()
+
+    f = open("Client/privatekey.txt", "w")
     f.write(str(d))
     f.write('\n')
     f.write(str(prime1))
