@@ -1,4 +1,4 @@
-from bitstring import BitArray
+from random import * 
 
 def Hash(message):
     def XOR_4(word1, word2, word3, word4):
@@ -86,17 +86,23 @@ def Hash(message):
 #can be tested at https://www.freeformatter.com/hmac-generator.html#before-output
 #key is 64 bits
 def HMAC(message, key):
-    opad = BitArray(bin = "01011100" * 8) 
-    ipad = BitArray(bin = "00110110" * 8)
+    opad = 0x5c5c5c5c5c5c5c5c
+    ipad = 0x3636363636363636
     
     
     a = (key ^ opad)
     b = (key ^ ipad)
-    right = b.bin + message
+
+    # same as right = b.bin + message 
+    right = bin(b)[2:] + message
+
     value = Hash(right)
-    newvalue = BitArray(uint = int(value,16), length = len(value) * 8)
+    newvalue = "0x" + (84-len(value))*"0"+ str(value)
+    newvalue = int(newvalue,16)
+    #newvalue = BitArray(uint = int(value,16), length = len(value) * 8)
     
-    left = a.bin + newvalue.bin
+    #left = a.bin + newvalue.bin
+    left = bin(a)[2:] + bin(newvalue)[2:]
     return Hash(left)
     
     
@@ -119,19 +125,10 @@ def main():
     
     #print(Hash("0011011000110110001101100011011000110110001101100011011000110110010000010010000001010100011001010111001101110100"))
     
-    h = HMAC(BitArray(uint = ord("a"), length = 8).bin, BitArray(uint = 2**64-1, length = 64))
+    #h = HMAC(BitArray(uint = ord("a"), length = 8).bin, BitArray(uint = 2**64-1, length = 64))
+    #equiv line below
+    h = HMAC("0110001",0xffffffffffffffff)
     print(h)
     
 if __name__ == "__main__":
     main()
-
-
-    
-
-
-
-
-
-
-
-
