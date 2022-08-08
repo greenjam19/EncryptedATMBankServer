@@ -1,9 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\Client",
-    "\\Server"
+    ""
   ],
-  "SelectedNode": "\\Client\\client.py",
+  "SelectedNode": "\\RSA.py",
   "PreviewInSolutionExplorer": false
 }
