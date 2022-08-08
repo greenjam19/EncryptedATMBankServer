@@ -220,25 +220,37 @@ def around(block, key, last):
 def encodeDES(blocks, key, rounds):
     out = []
     keys = generateSubkeys(key, rounds)
-    
+    previous = BitArray(uint = 0, length = 64)
     for block in blocks:
-        #print("len:", block.length)
+        #print(block.bin, previous.bin)
+        block ^= previous
+        #print("i", block, previous)
         block = applyPermutation(block, IP)
         for r in range(rounds):
             block = around(block, keys[r], r == rounds - 1)
-        out.append(applyPermutation(block, IP_1))
+        previous = applyPermutation(block, IP_1)
+        out.append(previous)
     return out
 
 #decodes a list of 8 bit blocks using S-DES
 def decodeDES(ciphertext, key, rounds):
     plaintext = []
     keys = generateSubkeys(key, rounds)
-    
+    previous = None
+    first = True
     for block in ciphertext:
+        temp = block
         block = applyPermutation(block, IP)
         for r in range(rounds):
             block = around(block, keys[rounds - 1 - r], r == rounds - 1)
-        plaintext.append(applyPermutation(block, IP_1))
+        out = applyPermutation(block, IP_1)
+        #print("o", out, previous)
+        if (not first):
+            out ^= previous
+        else:
+            first = False
+        plaintext.append(out)
+        previous = temp
     return plaintext
 
 #key is 192 bits long
@@ -281,5 +293,23 @@ def generateRandomKey(n):
     
     return key
 
+if __name__ == "__main__":
 
-
+    plaintext = "deposit 10000 dollars" 
+    key = generateRandomKey(64)
+    
+    #uncomment this to manually enter input
+    # plaintext = input("Enter plaintext: ")
+    # key = BitArray(bin = input("Enter 10-bit key (in binary): "))
+    
+    blocks = makeBlocks(plaintext, 64)
+    ciphertext = encodeDES(blocks, key, 16)
+    decoded = decodeDES(ciphertext, key, 16)
+    
+    print("The plaintext in ascii is:", plaintext)
+    # print("The plaintext is:", " ".join([i.bin for i in blocks]))
+    # print("The key is:", key.bin)
+    # print ("The ciphertext is:", " ".join([i.bin for i in ciphertext]))
+    # print ("The decoded text is:", " ".join([i.bin for i in decoded]))
+    
+    print(blocksToString(decoded))
