@@ -59,12 +59,12 @@ def main():
 				# Client_hello
 				# Usage <Hello/TLS/RSA/DES
 				msg = "Hello TLS RSA DES"
-				msg_encrypted = RSA_encrypt(server_public, msg)
+				msg_encrypted = RSA_encrypt(server_public, client_private, msg)
 				s.sendall(msg_encrypted)
 
 				# Server_hello
 				data = s.recv(512)
-				message = RSA_decrypt(client_private, data)
+				message = RSA_decrypt(server_public, client_private, data)
 				data = message.split()
 				if(data[0] != "Success"):
 					print("ERROR: Incompatable securities. Exiting...")
@@ -73,17 +73,17 @@ def main():
 
 				# Server_key_exchange
 				data = s.recv(512)
-				message = RSA_decrypt(client_private, data)
+				message = RSA_decrypt(server_public, client_private, data)
 				data = message.split()
 				print("CLIENT: Received symmetric key", data[0])
 
 				# Client_key_auth
-				msg_encrypted = RSA_encrypt(server_public, data[0])
+				msg_encrypted = RSA_encrypt(server_public, client_private, data[0])
 				s.sendall(msg_encrypted)
 
 				#Server_verify_goodbye
 				data = s.recv(512)
-				message = RSA_decrypt(client_private, data)
+				message = RSA_decrypt(server_public, client_private, data)
 				data = message.split()
 				if(data[0] != "Success"):
 					print("ERROR: Fraudulent messaging detected. Exiting...")

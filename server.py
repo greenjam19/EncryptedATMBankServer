@@ -58,7 +58,7 @@ def main():
 					returnable = ""
 					#Client_hello
 					data = conn.recv(512)
-					message = RSA_decrypt(server_private, data)
+					message = RSA_decrypt(client_public, server_private, data)
 					data = message.split()
 					if(data[0] != "Hello" or data[1] != "TLS" or data[2] \
 						!= "RSA" or data[3] != "DES"):
@@ -66,16 +66,16 @@ def main():
 					else:
 						returnable += "Success"
 					#Server_hello
-					msg_encrypted = RSA_encrypt(client_public, returnable)
+					msg_encrypted = RSA_encrypt(client_public, server_private, returnable)
 					conn.sendall(msg_encrypted)
 
 					#Server_symmetric_key
 					returnable = str(random.getrandbits(192))
-					msg_encrypted = RSA_encrypt(client_public, returnable)
+					msg_encrypted = RSA_encrypt(client_public, server_private, returnable)
 					conn.sendall(msg_encrypted)
 
 					data = conn.recv(512)
-					message = RSA_decrypt(server_private, data)
+					message = RSA_decrypt(client_public, server_private, data)
 					data = message.split()
 					if(data[0] != returnable):
 						returnable = "Failure"
@@ -83,7 +83,7 @@ def main():
 					else:
 						returnable = "Success"
 					#Server_verify_goodbye
-					msg_encrypted = RSA_encrypt(client_public, returnable)
+					msg_encrypted = RSA_encrypt(client_public, server_private, returnable)
 					conn.sendall(msg_encrypted)
 					if(returnable == "Failure"):
 						print("SERVER: Fraudulent Behavior. Exiting...")
@@ -117,14 +117,12 @@ def main():
 								returnable += str(balance)
 							elif(lis[0] == "withdraw"):
 								if(balance - int(lis[1]) < 0):
-									print("WARNING: Not enough capital in account to make withdrawl")
 									returnable += "Warning NEC"
 								else:
 									balance -= int(lis[1])
 									returnable += "Success "
 									returnable += str(balance)
 							elif(lis[0] == "check"):
-								print("SERVER: Client has", balance, "dollars remaining in account")
 								returnable += "Success "
 								returnable += str(balance)
 						conn.sendall(returnable.encode("UTF-8"))

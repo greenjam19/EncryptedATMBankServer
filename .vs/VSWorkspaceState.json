@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Client",
+    "\\Server"
   ],
-  "SelectedNode": "\\config.py",
+  "SelectedNode": "\\Client\\client.py",
   "PreviewInSolutionExplorer": false
 }
