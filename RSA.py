@@ -6,7 +6,10 @@ Created on Sun Aug  7 18:15:37 2022
 """
 import math
 
-def RSA_encrypt(public_key, private_key, message):
+from sha1 import Hash
+from bitstring import BitArray
+
+def RSA_encrypt(public_key, message):
     if (type(message) == type("a")):
         message = int.from_bytes(message.encode('utf-8'), byteorder = 'little')
     # else:
@@ -16,48 +19,135 @@ def RSA_encrypt(public_key, private_key, message):
     len = math.ceil(ciphertext.bit_length() / 8)
     return ciphertext.to_bytes(len, byteorder = 'little')
 
-def RSA_decrypt(pblic_key, private_key, msg):
-	msg = int.from_bytes(msg, 'little', signed = False)
-	message = pow(msg, private_key[0], private_key[1] * private_key[2])
+def RSA_decrypt(private_key, msg):
+    if (type(msg) == type("a".encode())):
+        msg = int.from_bytes(msg, 'little', signed = False)
+    message = pow(msg, private_key[0], private_key[1] * private_key[2])
 	#message = pow(message, public_key[0], public_key[1])
-	len = math.ceil(message.bit_length() / 8)
-	message = message.to_bytes(len, byteorder = 'little').decode('utf-8')
-	return(message)
+	#len = math.ceil(message.bit_length() / 8)
+	#message = message.to_bytes(len, byteorder = 'little').decode('utf-8')
+    return(message)
 
-with open("ServerPrivateKey.txt", "r") as f:
-		lines = f.readlines()
-		d = int(lines[0])
-		p = int(lines[1])
-		q = int(lines[2])
-		# PRIVATE KEY: {d, p, q}
-		server_private = (d, p, q)
+def itoa(number):
+    length = math.ceil(number.bit_length() / 8)
+    message = number.to_bytes(length, byteorder="little").decode("utf-8")
+    return message
 
-with open("ClientPublicKey.txt", "r") as f:
-		lines = f.readlines()
-		e = int(lines[0])
-		N = int(lines[1])
-		# PUBLIC KEY: {e, N}
-		client_public = (e, N)
-with open("ServerPublicKey.txt", "r") as f:
-		lines = f.readlines()
-		e = int(lines[0])
-		N = int(lines[1])
-		# PUBLIC KEY: {e, N}
-		server_public = (e, N)
+def atoi(message):
+    return int.from_bytes(message.encode('utf-8'), byteorder = 'little')
 
-with open("ClientPrivateKey.txt", "r") as f:
-		lines = f.readlines()
-		d = int(lines[0])
-		p = int(lines[1])
-		q = int(lines[2])
-		# PRIVATE KEY: {d, p, q}
-		client_private = (d, p, q)
-        
-#message = "hello there"
+#takes a string message and a private key
+#returns a signature (integer)
+def RSA_sign(private_key, message):
+    num = int.from_bytes(message.encode('utf-8'), byteorder = 'little')
+    h = Hash(BitArray(uint = num, length = math.ceil(math.log(num) / math.log(2))).bin)
+    signature = RSA_decrypt(private_key, int(h, 16));
+    return signature
 
-#x = RSA_decrypt(client_private, message.encode('utf-8'))
-#xp = RSA_encrypt(server_public, x)
+#takes the public key, message and signature
+#returns true if the signature matches the message
+def RSA_verify(public_key, message, signature):
+    num = int.from_bytes(message.encode('utf-8'), byteorder = 'little')
+    h = Hash(BitArray(uint = num, length = math.ceil(math.log(num) / math.log(2))).bin)
+    h = int(h, 16)
+    
+    hprime = RSA_encrypt(public_key, signature)  
+    hprime = int.from_bytes(hprime, byteorder = "little")
+    #print("hprime", hprime)
+    #print(h)
+    return h == hprime
 
-#y = RSA_decrypt(server_private, xp)
-#yp = RSA_encrypt(client_public, y)
-#print(yp.decode())
+#encodes the message (string) with the private key of the sender
+#and then the public key of the reciever
+#return the ciphertext (bytes)
+def RSA_encrypt_sign(private_key, public_key, message):
+    #print(message.encode("utf-8"))
+    x = RSA_decrypt(private_key, message.encode('utf-8'))
+   # print("x", x)
+    xp = RSA_encrypt(public_key, x)
+    #print("xp", xp)
+    return xp
+
+#decryptes the ciphertext (bytes) using the public_key of the sender
+#and the private_key of the reciever, return a string
+def RSA_decrypt_sign(private_key, public_key, ciphertext):
+    y = RSA_decrypt(private_key, ciphertext)
+    #print("y", y)
+    yp = RSA_encrypt(public_key, y)
+    #print("yp", yp)
+    tries = 0
+    out = ""
+    while True:
+        try:
+            out = yp.decode()
+            break
+        except:
+            y+= server_private[1] * server_private[2]
+            yp = RSA_encrypt(client_public, y)
+        tries += 1
+        if (tries == 20):
+            break
+            print("cannot decrypt")
+    return out
+
+if __name__ == "__main__":
+    with open("ServerPrivateKey.txt", "r") as f:
+    		lines = f.readlines()
+    		d = int(lines[0])
+    		p = int(lines[1])
+    		q = int(lines[2])
+    		# PRIVATE KEY: {d, p, q}
+    		server_private = (d, p, q)
+    
+    with open("ClientPublicKey.txt", "r") as f:
+    		lines = f.readlines()
+    		e = int(lines[0])
+    		N = int(lines[1])
+    		# PUBLIC KEY: {e, N}
+    		client_public = (e, N)
+    with open("ServerPublicKey.txt", "r") as f:
+    		lines = f.readlines()
+    		e = int(lines[0])
+    		N = int(lines[1])
+    		# PUBLIC KEY: {e, N}
+    		server_public = (e, N)
+    
+    with open("ClientPrivateKey.txt", "r") as f:
+    		lines = f.readlines()
+    		d = int(lines[0])
+    		p = int(lines[1])
+    		q = int(lines[2])
+    		# PRIVATE KEY: {d, p, q}
+    		client_private = (d, p, q)
+            
+    message = "testing a very long strin"
+    print(message.encode("utf-8"))
+    x = RSA_decrypt(client_private, message.encode('utf-8'))
+    print("x", x)
+    xp = RSA_encrypt(server_public, x)
+    print("xp", xp)
+    
+    
+    y = RSA_decrypt(server_private, xp)
+    print("y", y)
+    yp = RSA_encrypt(client_public, y)
+    print("yp", yp)
+    while True:
+        try:
+            print(yp.decode())
+            break
+        except:
+            y+= server_private[1] * server_private[2]
+            yp = RSA_encrypt(client_public, y)
+    #print(yp.decode("utf-8"))
+    
+    test = RSA_decrypt(client_private, message.encode("utf-8"))
+    done = RSA_encrypt(client_public, test)
+    
+    test1 = RSA_encrypt(server_public, message)
+    done1 = RSA_decrypt(server_private, test1)
+    
+    sig = RSA_sign(client_private, message)
+    print("signature:", sig)
+    
+    print(RSA_verify(client_public, message, sig))
