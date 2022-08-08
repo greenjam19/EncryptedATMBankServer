@@ -82,8 +82,8 @@ def RSA_decrypt_sign(private_key, public_key, ciphertext):
             out = yp.decode()
             break
         except:
-            y+= server_private[1] * server_private[2]
-            yp = RSA_encrypt(client_public, y)
+            y+= private_key[1] * private_key[2]
+            yp = RSA_encrypt(public_key, y)
         tries += 1
         if (tries == 20):
             break

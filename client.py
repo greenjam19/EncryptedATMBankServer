@@ -4,7 +4,7 @@
 import socket
 import math
 
-from RSA import RSA_encrypt, RSA_decrypt
+from RSA import RSA_encrypt_sign, RSA_decrypt_sign
 
 def check_int(d_w):
 	st = "How much would you like to " + d_w + "?\n"
@@ -23,6 +23,8 @@ def main():
 
 	# non-static variables
 	authenticated = False
+	# key used for DES
+	symmetric_key = 0
 
 	#######
 	#SETUP#
@@ -59,12 +61,12 @@ def main():
 				# Client_hello
 				# Usage <Hello/TLS/RSA/DES
 				msg = "Hello TLS RSA DES"
-				msg_encrypted = RSA_encrypt(server_public, client_private, msg)
+				msg_encrypted = RSA_encrypt_sign(client_private, server_public, msg)
 				s.sendall(msg_encrypted)
 
 				# Server_hello
 				data = s.recv(512)
-				message = RSA_decrypt(server_public, client_private, data)
+				message = RSA_decrypt_sign(client_private, server_public, data)
 				data = message.split()
 				if(data[0] != "Success"):
 					print("ERROR: Incompatable securities. Exiting...")
@@ -73,17 +75,17 @@ def main():
 
 				# Server_key_exchange
 				data = s.recv(512)
-				message = RSA_decrypt(server_public, client_private, data)
+				message = RSA_decrypt_sign(client_private, server_public, data)
 				data = message.split()
-				print("CLIENT: Received symmetric key", data[0])
+				symmetric_key = int(data[0])
 
 				# Client_key_auth
-				msg_encrypted = RSA_encrypt(server_public, client_private, data[0])
+				msg_encrypted = RSA_encrypt_sign(client_private, server_public, data[0])
 				s.sendall(msg_encrypted)
 
 				#Server_verify_goodbye
 				data = s.recv(512)
-				message = RSA_decrypt(server_public, client_private, data)
+				message = RSA_decrypt_sign(client_private, server_public, data)
 				data = message.split()
 				if(data[0] != "Success"):
 					print("ERROR: Fraudulent messaging detected. Exiting...")

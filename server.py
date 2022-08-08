@@ -5,8 +5,9 @@ import socket
 import os
 import random
 import math
+from bitstring import BitArray
 
-from RSA import RSA_encrypt, RSA_decrypt
+from RSA import RSA_encrypt_sign, RSA_decrypt_sign
 
 def main():
 	#static variables
@@ -17,6 +18,8 @@ def main():
 	# non-static variables
 	balance = 0
 	authenticated = False
+	# Key used for DES
+	symmetric_key = 0
 
 	#######
 	#SETUP#
@@ -58,7 +61,7 @@ def main():
 					returnable = ""
 					#Client_hello
 					data = conn.recv(512)
-					message = RSA_decrypt(client_public, server_private, data)
+					message = RSA_decrypt_sign(server_private, client_public, data)
 					data = message.split()
 					if(data[0] != "Hello" or data[1] != "TLS" or data[2] \
 						!= "RSA" or data[3] != "DES"):
@@ -66,16 +69,17 @@ def main():
 					else:
 						returnable += "Success"
 					#Server_hello
-					msg_encrypted = RSA_encrypt(client_public, server_private, returnable)
+					msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
 					conn.sendall(msg_encrypted)
 
 					#Server_symmetric_key
 					returnable = str(random.getrandbits(192))
-					msg_encrypted = RSA_encrypt(client_public, server_private, returnable)
+					msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
 					conn.sendall(msg_encrypted)
+					symmetric_key = int(returnable)
 
 					data = conn.recv(512)
-					message = RSA_decrypt(client_public, server_private, data)
+					message = RSA_decrypt_sign(server_private, client_public, data)
 					data = message.split()
 					if(data[0] != returnable):
 						returnable = "Failure"
@@ -83,12 +87,13 @@ def main():
 					else:
 						returnable = "Success"
 					#Server_verify_goodbye
-					msg_encrypted = RSA_encrypt(client_public, server_private, returnable)
+					msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
 					conn.sendall(msg_encrypted)
 					if(returnable == "Failure"):
 						print("SERVER: Fraudulent Behavior. Exiting...")
 						return 1
 					else:
+						print("SERVER: Authenticated.")
 						authenticated = True
 
 				else:
