@@ -115,7 +115,7 @@ def main():
 							print("SERVER: Received quit request from ATM. Exiting...")
 							returnable += "Quit"
 						else:
-							print("SERVER: Received", data)
+							print("SERVER: Received", lis[0])
 							if(lis[0] == "deposit"):
 								balance += int(lis[1])
 								returnable += "Success "
