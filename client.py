@@ -62,14 +62,22 @@ def main():
 				# Client_hello
 				# Usage <Hello/TLS/RSA/DES
 				msg = "Hello TLS RSA 3DES"
-				msg_encrypted = RSA_encrypt_sign(client_private, server_public, msg)
+				try:
+					msg_encrypted = RSA_encrypt_sign(client_private, server_public, msg)
+				except:
+					print("CLIENT: ERROR: Message not understood. Exiting...")
+					return 1
 				s.sendall(msg_encrypted)
 
 				# Server_hello
 				data = s.recv(512)
-				message = RSA_decrypt_sign(client_private, server_public, data)
+				try:
+					message = RSA_decrypt_sign(client_private, server_public, data)
+				except:
+					print("CLIENT: ERROR: Message not understood. Exiting...")
+					return 1
 				data = message.split()
-				if(data[0] != "Success"):
+				if(len(data) != 1 or data[0] != "Success"):
 					print("ERROR: Incompatable securities. Exiting...")
 					return 1
 				print("CLIENT: Established security capabilities")
@@ -77,29 +85,49 @@ def main():
 				# Client_nonce
 				RNG = secrets.SystemRandom()
 				nonce = RNG.randrange(2**100, 2**200)
-				nonce_encrypted = RSA_encrypt_sign(client_private, server_public, str(nonce))
+				try:
+					nonce_encrypted = RSA_encrypt_sign(client_private, server_public, str(nonce))
+				except:
+					print("CLIENT: ERROR: Message not understood. Exiting...")
+					return 1
 				s.sendall(nonce_encrypted)
 				nonce_bounceback = s.recv(512)
-				nonce_bounceback = RSA_decrypt_sign(client_private, server_public, nonce_bounceback)
+				try:
+					nonce_bounceback = RSA_decrypt_sign(client_private, server_public, nonce_bounceback)
+				except:
+					print("CLIENT: ERROR: Message not understood. Exiting...")
+					return 1
 				if(nonce_bounceback != str(nonce)):
 					print("ERROR: Incorrect server authentication. Exiting...")
 					return 1
 
 				# Server_key_exchange
 				data = s.recv(512)
-				message = RSA_decrypt_sign(client_private, server_public, data)
+				try:
+					message = RSA_decrypt_sign(client_private, server_public, data)
+				except:
+					print("CLIENT: ERROR: Message not understood. Exiting...")
+					return 1
 				data = message.split()
 				symmetric_key = int(data[0])
 
 				# Client_key_auth
-				msg_encrypted = RSA_encrypt_sign(client_private, server_public, data[0])
+				try:
+					msg_encrypted = RSA_encrypt_sign(client_private, server_public, data[0])
+				except:
+					print("CLIENT: ERROR: Message not understood. Exiting...")
+					return 1
 				s.sendall(msg_encrypted)
 
 				#Server_verify_goodbye
 				data = s.recv(512)
-				message = RSA_decrypt_sign(client_private, server_public, data)
+				try:
+					message = RSA_decrypt_sign(client_private, server_public, data)
+				except:
+					print("CLIENT: ERROR: Message not understood. Exiting...")
+					return 1
 				data = message.split()
-				if(data[0] != "Success"):
+				if(len(data) != 1 or data[0] != "Success"):
 					print("ERROR: Fraudulent messaging detected. Exiting...")
 					return 1
 				print("CLIENT: Authenticated")
@@ -142,8 +170,8 @@ def main():
 					print("WARNING: Unrecognized command")
 					continue
 
-				s.sendall(transmission.lower().encode('UTF-8'))
-				data = s.recv(512).decode().split()
+				s.sendall(transmission.lower().encode('UTF-8', errors = "ignore"))
+				data = s.recv(512).decode('UTF-8', errors = "ignore").split()
 				if(data[0] == "Quit"):
 					break
 				elif(data[0] == "Warning"):

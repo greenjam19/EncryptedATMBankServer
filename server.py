@@ -62,15 +62,23 @@ def main():
 					returnable = ""
 					#Client_hello
 					data = conn.recv(512)
-					message = RSA_decrypt_sign(server_private, client_public, data)
+					try:
+						message = RSA_decrypt_sign(server_private, client_public, data)
+					except:
+						print("SERVER: ERROR: Message not understood. Exiting...")
+						return 1
 					data = message.split()
-					if(data[0] != "Hello" or data[1] != "TLS" or data[2] \
+					if(len(data) != 4 or data[0] != "Hello" or data[1] != "TLS" or data[2] \
 						!= "RSA" or data[3] != "3DES"):
 						returnable += "Failure"
 					else:
 						returnable += "Success"
 					#Server_hello
-					msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
+					try:
+						msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
+					except:
+						print("SERVER: ERROR: Message not understood. Exiting...")
+						return 1
 					conn.sendall(msg_encrypted)
 					if(returnable == "Failure"):
 						print("SERVER: Detected incompatablie client. Exiting...")
@@ -78,25 +86,39 @@ def main():
 
 					# Client_nonce
 					nonce = conn.recv(512)
-					nonce_decrypted = RSA_decrypt_sign(server_private, client_public, nonce)
-					nonce_encrypted = RSA_encrypt_sign(server_private, client_public, nonce_decrypted)
+					try:
+						nonce_decrypted = RSA_decrypt_sign(server_private, client_public, nonce)
+						nonce_encrypted = RSA_encrypt_sign(server_private, client_public, nonce_decrypted)
+					except:
+						print("SERVER: ERROR: Message not understood. Exiting...")
+						return 1
 					conn.sendall(nonce_encrypted)
 
 					#Server_symmetric_key
 					returnable = str(symmetric_key)
-					msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
+					try:
+						msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
+					except:
+						print("SERVER: ERROR: Message not understood. Exiting...")
+						return 1	
 					conn.sendall(msg_encrypted)
-
 					data = conn.recv(512)
-					message = RSA_decrypt_sign(server_private, client_public, data)
+					try:
+						message = RSA_decrypt_sign(server_private, client_public, data)
+					except:
+						print("SERVER: ERROR: Message not understood. Exiting...")
+						return 1
 					data = message.split()
-					if(data[0] != returnable):
+					if(len(data) != 1 or data[0] != returnable):
 						returnable = "Failure"
-
 					else:
 						returnable = "Success"
 					#Server_verify_goodbye
-					msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
+					try:
+						msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
+					except:
+						print("SERVER: ERROR: Message not understood. Exiting...")
+						return 1
 					conn.sendall(msg_encrypted)
 					if(returnable == "Failure"):
 						print("SERVER: Fraudulent Behavior. Exiting...")
@@ -114,7 +136,7 @@ def main():
 					data = conn.recv(512)
 					if not data:
 						break
-					data = data.decode()
+					data = data.decode('UTF-8', errors = "ignore")
 					lis = data.split()
 					returnable = ""
 					if not authenticated:
@@ -139,7 +161,7 @@ def main():
 							elif(lis[0] == "check"):
 								returnable += "Success "
 								returnable += str(balance)
-						conn.sendall(returnable.encode("UTF-8"))
+						conn.sendall(returnable.encode("UTF-8", errors = "ignore"))
 
 if __name__ == "__main__":
 	main()
