@@ -3,6 +3,7 @@
 #imports
 import socket
 import math
+import secrets
 
 from RSA import RSA_encrypt_sign, RSA_decrypt_sign
 
@@ -72,6 +73,9 @@ def main():
 					print("ERROR: Incompatable securities. Exiting...")
 					return 1
 				print("CLIENT: Established security capabilities")
+
+				# Client_nonce
+
 
 				# Server_key_exchange
 				data = s.recv(512)

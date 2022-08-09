@@ -5,6 +5,7 @@ import socket
 import os
 import random
 import math
+import secrets
 from bitstring import BitArray
 
 from RSA import RSA_encrypt_sign, RSA_decrypt_sign
@@ -19,7 +20,7 @@ def main():
 	balance = 0
 	authenticated = False
 	# Key used for DES (setup)
-	symmetric_key = random.getrandbits(192)
+	symmetric_key = secrets.randbits(192)
 
 	#######
 	#SETUP#
@@ -64,7 +65,7 @@ def main():
 					message = RSA_decrypt_sign(server_private, client_public, data)
 					data = message.split()
 					if(data[0] != "Hello" or data[1] != "TLS" or data[2] \
-						!= "RSA" or data[3] != "DES"):
+						!= "RSA" or data[3] != "3DES"):
 						returnable += "Failure"
 					else:
 						returnable += "Success"

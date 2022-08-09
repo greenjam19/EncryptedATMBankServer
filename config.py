@@ -1,5 +1,5 @@
 # Imports
-import random
+import secrets
 
 low_primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 
               31, 37, 41, 43, 47, 53, 59, 61, 67, 
@@ -24,7 +24,7 @@ def gcd(p, q):
 
 def genLargeNum(n):
     # Picking random number in range (2^(n-1) + 1, 2^n - 1)
-    randnum = random.randrange(2**(n-1)+1, 2**n-1)
+    randnum = secrets.randrange(2**(n-1)+1, 2**n-1)
     return randnum
 
 def isProbablePrime(n):
@@ -59,7 +59,7 @@ def mrTrialBasic(candidate):
         # Because of this, we run trial 15 times so there is a very small change
         # the number is psuedo-prime
         for i in range(15):
-            ro_candidate = random.randrange(2, candidate)
+            ro_candidate = secrets.randrange(2, candidate)
             if(basicTrial(ro_candidate)):
                 return False
         return True
@@ -77,7 +77,7 @@ def getEncryptionKey(phi_mod):
     #selecting (randomly) the encryption key e
     e = 0
     while(1):
-        e = random.randrange(1, phi_mod)
+        e = secrets.randrange(1, phi_mod)
         if(gcd(e, phi_mod) == 1):
             return e
 
