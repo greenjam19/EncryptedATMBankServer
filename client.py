@@ -76,7 +76,7 @@ def main():
 
 				# Client_nonce
 				RNG = secrets.SystemRandom()
-				nonce = RNG.randrange(1024, 4096)
+				nonce = RNG.randrange(2**100, 2**200)
 				nonce_encrypted = RSA_encrypt_sign(client_private, server_public, str(nonce))
 				s.sendall(nonce_encrypted)
 				nonce_bounceback = s.recv(512)
