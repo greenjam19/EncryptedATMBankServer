@@ -113,7 +113,7 @@ def read_packet(data, symmetric_key, hmac_key):
     #print("SERVER: Received", ptext_mess)
     listOfData = ptext_mess.split('.')
     lis = ptext_mess.split(".")
-    print("decrypted:", lis)
+    #print("decrypted:", lis)
 
     m = makeBlocks(lis[0].lower() + '.',1)
     bit_m = ""
@@ -125,7 +125,7 @@ def read_packet(data, symmetric_key, hmac_key):
     worked = True
     for i in range(len(message_hmac)):  
         if message_hmac[i] != lis[1][i]:
-            print("SERVER: Received invalid MAC.")
+            #print("SERVER: Received invalid MAC.")
             worked = False
             break
     return (worked, lis[0].split())

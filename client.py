@@ -27,6 +27,7 @@ def main():
 	authenticated = False
 	# key used for DES
 	symmetric_key = 0
+	time = 0
 
 	#######
 	#SETUP#
@@ -188,6 +189,8 @@ def main():
 				else:
 					print("WARNING: Unrecognized command")
 					continue
+				transmission += " " + str(time)
+				time += 1
 				transmission+='.'
 
 				# print("This is the transmission:", transmission.lower())
@@ -221,8 +224,16 @@ def main():
 				# s.sendall(encrypt_mess_bytes)
                 
 				data = s.recv(512).decode('UTF-8', errors = "ignore")
-				word, data = read_packet(data, symmetric_key, hmac_key)
-				print("got back: ", data)
+				work, data = read_packet(data, symmetric_key, hmac_key)
+				if (not work):
+					print("CLIENT: Received invalid mac. Server compromised! Closing ATM...")
+					return 0
+
+				if (int(data[-1]) != time):
+					print("SERVER: Repeated message detected, invalid time stamp! Closing ATM...")
+					return 0
+
+				#print("got back: ", data)
 				if data[0] == "Quit":
 					break
 				elif data[0] == "Warning":

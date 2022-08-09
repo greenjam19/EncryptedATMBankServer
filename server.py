@@ -16,7 +16,7 @@ def main():
 	HOST = "127.0.0.1"
 	PORT = 65432
 
-
+	time = 0
 	# non-static variables
 	balance = 0
 	authenticated = False
@@ -168,7 +168,7 @@ def main():
 						print(data)
 					else:
 						
-						print("got:", data)
+						#print("got:", data)
 						# print(makeBlocks(data,64))
 						# decoded_mess = decodeTripleDES(makeBlocks(data,64), BitArray(uint = symmetric_key, length = 192))
 						# print(decoded_mess)
@@ -221,11 +221,16 @@ def main():
 						# 		break
 						worked, lis = read_packet(data, symmetric_key, hmac_key)
 						if (not worked):
-							print("failed to validate mac, closing server")
-							return
+							print("SERVER: Failed to validate mac. Message corruption detected! Closing server...")
+							return 0 
+						#print(lis)
+						if (int(lis[-1]) != time):
+							print("SERVER: Repeated message detected, invalid time stamp! Closing server...")
+							return 0
+						time += 1
 						#lis = lis[0].split()
 
-						print(lis[0])
+						#print(lis)
 						if(lis[0] == "deposit"):
 							balance += int(lis[1])
 							returnable += "Success "
@@ -243,8 +248,9 @@ def main():
 						elif(lis[0] == "quit"):
 							print("SERVER: Received quit request from ATM. Exiting...")
 							returnable += "Quit"
+					returnable += " " + str(time)
 					returnable += "."
-					print("sending back:", returnable + ".")
+					#print("sending back:", returnable + ".")
 					#conn.sendall(returnable.encode("UTF-8", errors = "ignore"))
 					conn.sendall(create_packet(returnable, symmetric_key, hmac_key))
 
