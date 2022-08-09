@@ -7,7 +7,8 @@ These 2 files must be run in a certain order to ensure no timeouts occur.
 Please run, in this order:
 Server.py (bank process)
 Client.py (ATM process)
-Processes should be run on the same machine.
+Processes should be run on the same machine, on SEPERATE TERMINALS.
+Ensure BOTH PROCESSES ARE KILLED before running again, or the port will show up as in-use. Again, SEPERATE TERMINALS for server/client
 
 Additionally, run config.py to generate new public/private keypairs for server and client (should be done every run).
 Private keys should not be accessed by anyone but the process they are generated for- Public keys,
