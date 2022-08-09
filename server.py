@@ -9,7 +9,7 @@ import secrets
 from bitstring import BitArray
 from sha1 import *
 from DES import *
-from RSA import RSA_encrypt_sign, RSA_decrypt_sign
+from RSA import *
 
 def main():
 	#static variables
@@ -158,56 +158,95 @@ def main():
 
 					data = conn.recv(512)
 
+
 					if not data:
 						break
 					data = data.decode('UTF-8', errors = "ignore")
-					print("This is the initially received message:",data)
-					lis = data.split()
+					#print("This is the initially received message:",data)
 					returnable = ""
 					if not authenticated:
-						print(lis[0])
+						print(data)
 					else:
-						if(lis[0] == "quit"):
+						
+						print("got:", data)
+						# print(makeBlocks(data,64))
+						# decoded_mess = decodeTripleDES(makeBlocks(data,64), BitArray(uint = symmetric_key, length = 192))
+						# print(decoded_mess)
+						# ptext_mess = blocksToString(decoded_mess)
+						# #print("SERVER: Received", ptext_mess)
+						# listOfData = ptext_mess.split('.')
+						# #print("This is the transmission:", lis[0])
+						# # m = makeBlocks(lis[0].lower() + '.',1)
+						# # bit_m = ""
+						# # for i in range(len(m)):
+						# # 	bit_m += m[i].bin
+
+						# # message_hmac = HMAC(bit_m, hmac_key)
+                        
+						# # data = conn.recv(512)
+						# # data = data.decode('UTF-8', errors = "ignore")
+                        
+						# # signature = decodeTripleDES(makeBlocks(data,64), BitArray(uint = symmetric_key, length = 192))
+						# # signature = blocksToString(signature)
+                        
+						# # # if (RSA_verify(client_public, blocksToString(decoded_mess), blocksToString(signature))):
+						# # #       print("server failed to verify incoming MAC")
+						# # #       continue
+						# # print("This is message_hmac:",message_hmac, signature)
+						# # print("Hashing this value:", bit_m,"with this key:",hmac_key)
+						# # worked = True
+						# # for i in range(len(signature)):	
+						# # 	if message_hmac[i] != signature[i]:
+						# # 		print("SERVER: Received invalid MAC.")
+						# # 		worked = False
+						# # 		break
+
+						# # if worked == False:
+						# # 	continue
+						# lis = ptext_mess.split(".")
+						# print("decrypted:", lis)
+
+						# m = makeBlocks(lis[0].lower() + '.',1)
+						# bit_m = ""
+						# for i in range(len(m)):
+						# 	bit_m += m[i].bin
+
+						# message_hmac = HMAC(bit_m, hmac_key)
+
+						# worked = True
+						# for i in range(len(message_hmac)):	
+						# 	if message_hmac[i] != lis[1][i]:
+						# 		print("SERVER: Received invalid MAC.")
+						# 		worked = False
+						# 		break
+						worked, lis = read_packet(data, symmetric_key, hmac_key)
+						if (not worked):
+							print("failed to validate mac, closing server")
+							return
+						#lis = lis[0].split()
+
+						print(lis[0])
+						if(lis[0] == "deposit"):
+							balance += int(lis[1])
+							returnable += "Success "
+							returnable += str(balance)
+						elif(lis[0] == "withdraw"):
+							if(balance - int(lis[1]) < 0):
+								returnable += "Warning NEC"
+							else:
+								balance -= int(lis[1])
+								returnable += "Success "
+								returnable += str(balance)
+						elif(lis[0] == "check"):
+							returnable += "Success "
+							returnable += str(balance)
+						elif(lis[0] == "quit"):
 							print("SERVER: Received quit request from ATM. Exiting...")
 							returnable += "Quit"
-						else:
-							decoded_mess = decodeTripleDES(makeBlocks(lis[0],64), BitArray(uint = symmetric_key, length = 192))
-							ptext_mess = blocksToString(decoded_mess)
-							print("SERVER: Received", ptext_mess)
-							lis = ptext_mess.split('.')
-							print("This is the transmission:", lis[0])
-							m = makeBlocks(lis[0].lower() + '.',1)
-							bit_m = ""
-							for i in range(len(m)):
-								bit_m += m[i].bin
-
-							message_hmac = HMAC(bit_m, hmac_key)
-							print("This is message_hmac:",message_hmac,"and this is lis[1]:", lis)
-							print("Hashing this value:", bit_m,"with this key:",hmac_key)
-							worked = True
-							for i in range(len(message_hmac)):	
-								if message_hmac[i] != lis[1][i]:
-									print("SERVER: Received invalid MAC.")
-									worked = False
-									break
-							if worked == False:
-								continue
-							lis = lis[0].split()
-							if(lis[0] == "deposit"):
-								balance += int(lis[1])
-								returnable += "Success "
-								returnable += str(balance)
-							elif(lis[0] == "withdraw"):
-								if(balance - int(lis[1]) < 0):
-									returnable += "Warning NEC"
-								else:
-									balance -= int(lis[1])
-									returnable += "Success "
-									returnable += str(balance)
-							elif(lis[0] == "check"):
-								returnable += "Success "
-								returnable += str(balance)
-						conn.sendall(returnable.encode("UTF-8", errors = "ignore"))
+					returnable += "."
+					print("sending back:", returnable + ".")
+					#conn.sendall(returnable.encode("UTF-8", errors = "ignore"))
+					conn.sendall(create_packet(returnable, symmetric_key, hmac_key))
 
 if __name__ == "__main__":
 	main()

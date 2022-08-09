@@ -5,7 +5,7 @@ import socket
 import math
 import secrets
 
-from RSA import RSA_encrypt_sign, RSA_decrypt_sign
+from RSA import *
 from sha1 import *
 from DES import *
 def check_int(d_w):
@@ -190,29 +190,39 @@ def main():
 					continue
 				transmission+='.'
 
-				print("This is the transmission:", transmission.lower())
-				m = makeBlocks(transmission.lower(),1)
-				bit_m = ""
-				for i in range(len(m)):
-					bit_m += m[i].bin
+				# print("This is the transmission:", transmission.lower())
+				# m = makeBlocks(transmission.lower(),1)
+				# bit_m = ""
+				# for i in range(len(m)):
+				# 	bit_m += m[i].bin
 
-				#m = str(transmission.lower().encode('UTF-8', errors = "ignore"))
+				# #m = str(transmission.lower().encode('UTF-8', errors = "ignore"))
 				
-				#m = bin(int(''.join(str(ord(c)) for c in m)))[2:]
+				# #m = bin(int(''.join(str(ord(c)) for c in m)))[2:]
 			
-				message_hmac = HMAC(bit_m, hmac_key)
-				print("Hashing this value:", bit_m,"with this key:",hmac_key)
-				print("This is message_hmac:",message_hmac)
-				number = int(message_hmac,16)
-				length = math.ceil(number.bit_length() / 8)
+				# message_hmac = HMAC(bit_m, hmac_key)
+				# print("Hashing this value:", bit_m,"with this key:",hmac_key)
+				# print("This is message_hmac:",message_hmac)
+				# number = int(message_hmac,16)
+				# length = math.ceil(number.bit_length() / 8)
 
-				#hmac_bytes = number.to_bytes(length, byteorder="little")
-				#mess = transmission.lower().encode('UTF-8', errors = "ignore") + hmac_bytes
+				# # hmac_bytes = number.to_bytes(length, byteorder="little")
+				# # mess = transmission.lower().encode('UTF-8', errors = "ignore") + hmac_bytes
                 
-				encrypt_mess = encodeTripleDES(transmission + message_hmac, BitArray(uint = symmetric_key, length = 192))
-				encrypt_mess_bytes = blocksToString(encrypt_mess).encode('UTF-8')
-				s.sendall(encrypt_mess_bytes)
-				data = s.recv(512).decode('UTF-8', errors = "ignore").split()
+	
+                
+				# encrypt_mess = encodeTripleDES(transmission + message_hmac, BitArray(uint = symmetric_key, length = 192))
+				# print("Sending", blocksToString(encrypt_mess), encrypt_mess)
+				# encrypt_mess_bytes = blocksToString(encrypt_mess).encode('UTF-8')
+				s.sendall(create_packet(transmission, symmetric_key, hmac_key))
+                
+				# encrypt_mess = encodeTripleDES(message_hmac, BitArray(uint = symmetric_key, length = 192))
+				# encrypt_mess_bytes = blocksToString(encrypt_mess).encode('UTF-8')
+				# s.sendall(encrypt_mess_bytes)
+                
+				data = s.recv(512).decode('UTF-8', errors = "ignore")
+				word, data = read_packet(data, symmetric_key, hmac_key)
+				print("got back: ", data)
 				if data[0] == "Quit":
 					break
 				elif data[0] == "Warning":

@@ -175,7 +175,7 @@ def makeBlocks(string, n):
         blocks.append(bits[last:i])
         last = i
     #print(last, bits.length)
-    if (last < bits.length):
+    if (last <= bits.length):
         finalBlock = bits[last:]
         if n - finalBlock.length > 0:
            finalBlock += BitArray(uint = 0, length = n - finalBlock.length)
@@ -190,9 +190,10 @@ def blocksToString(blocks):
     for i in blocks:
         bits += i
     last = 0
-    for i in range(8,bits.length, 8):
+    for i in range(8,bits.length + 1, 8):
         plaintext += chr(bits[last:i].uint)
         last = i
+
     return plaintext
     
 #half block is 32 bits
@@ -313,3 +314,8 @@ if __name__ == "__main__":
     # print ("The decoded text is:", " ".join([i.bin for i in decoded]))
     
     print(blocksToString(decoded))
+
+    x = [BitArray('0xe3993b839e5c00c4')]
+    print(blocksToString(x))
+    print([ord(i) for i in blocksToString(x)])
+    print(x, makeBlocks(blocksToString(x), 64))

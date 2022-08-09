@@ -9,6 +9,9 @@ import math
 from sha1 import Hash
 from bitstring import BitArray
 
+from DES import *
+from sha1 import *
+
 def RSA_encrypt(public_key, message):
     if (type(message) == type("a")):
         message = int.from_bytes(message.encode('utf-8'), byteorder = 'little')
@@ -89,6 +92,43 @@ def RSA_decrypt_sign(private_key, public_key, ciphertext):
             break
             print("cannot decrypt")
     return out
+
+def create_packet(transmission, symmetric_key, hmac_key):
+    m = makeBlocks(transmission.lower(),1)
+    bit_m = ""
+    for i in range(len(m)):
+        bit_m += m[i].bin
+
+    message_hmac = HMAC(bit_m, hmac_key)
+    number = int(message_hmac,16)
+
+    encrypt_mess = encodeTripleDES(transmission + message_hmac, BitArray(uint = symmetric_key, length = 192))
+    encrypt_mess_bytes = blocksToString(encrypt_mess).encode('UTF-8')
+
+    return encrypt_mess_bytes
+
+def read_packet(data, symmetric_key, hmac_key):
+    decoded_mess = decodeTripleDES(makeBlocks(data,64), BitArray(uint = symmetric_key, length = 192))
+    ptext_mess = blocksToString(decoded_mess)
+    #print("SERVER: Received", ptext_mess)
+    listOfData = ptext_mess.split('.')
+    lis = ptext_mess.split(".")
+    print("decrypted:", lis)
+
+    m = makeBlocks(lis[0].lower() + '.',1)
+    bit_m = ""
+    for i in range(len(m)):
+        bit_m += m[i].bin
+
+    message_hmac = HMAC(bit_m, hmac_key)
+
+    worked = True
+    for i in range(len(message_hmac)):  
+        if message_hmac[i] != lis[1][i]:
+            print("SERVER: Received invalid MAC.")
+            worked = False
+            break
+    return (worked, lis[0].split())
 
 if __name__ == "__main__":
     with open("ServerPrivateKey.txt", "r") as f:
