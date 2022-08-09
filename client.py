@@ -75,7 +75,15 @@ def main():
 				print("CLIENT: Established security capabilities")
 
 				# Client_nonce
-
+				RNG = secrets.SystemRandom()
+				nonce = RNG.randrange(1024, 4096)
+				nonce_encrypted = RSA_encrypt_sign(client_private, server_public, str(nonce))
+				s.sendall(nonce_encrypted)
+				nonce_bounceback = s.recv(512)
+				nonce_bounceback = RSA_decrypt_sign(client_private, server_public, nonce_bounceback)
+				if(nonce_bounceback != str(nonce)):
+					print("ERROR: Incorrect server authentication. Exiting...")
+					return 1
 
 				# Server_key_exchange
 				data = s.recv(512)

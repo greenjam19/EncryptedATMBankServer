@@ -76,6 +76,12 @@ def main():
 						print("SERVER: Detected incompatablie client. Exiting...")
 						break
 
+					# Client_nonce
+					nonce = conn.recv(512)
+					nonce_decrypted = RSA_decrypt_sign(server_private, client_public, nonce)
+					nonce_encrypted = RSA_encrypt_sign(server_private, client_public, nonce_decrypted)
+					conn.sendall(nonce_encrypted)
+
 					#Server_symmetric_key
 					returnable = str(symmetric_key)
 					msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
