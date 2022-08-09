@@ -193,30 +193,7 @@ def main():
 				time += 1
 				transmission+='.'
 
-				# print("This is the transmission:", transmission.lower())
-				# m = makeBlocks(transmission.lower(),1)
-				# bit_m = ""
-				# for i in range(len(m)):
-				# 	bit_m += m[i].bin
-
-				# #m = str(transmission.lower().encode('UTF-8', errors = "ignore"))
 				
-				# #m = bin(int(''.join(str(ord(c)) for c in m)))[2:]
-			
-				# message_hmac = HMAC(bit_m, hmac_key)
-				# print("Hashing this value:", bit_m,"with this key:",hmac_key)
-				# print("This is message_hmac:",message_hmac)
-				# number = int(message_hmac,16)
-				# length = math.ceil(number.bit_length() / 8)
-
-				# # hmac_bytes = number.to_bytes(length, byteorder="little")
-				# # mess = transmission.lower().encode('UTF-8', errors = "ignore") + hmac_bytes
-                
-	
-                
-				# encrypt_mess = encodeTripleDES(transmission + message_hmac, BitArray(uint = symmetric_key, length = 192))
-				# print("Sending", blocksToString(encrypt_mess), encrypt_mess)
-				# encrypt_mess_bytes = blocksToString(encrypt_mess).encode('UTF-8')
 				s.sendall(create_packet(transmission, symmetric_key, hmac_key))
                 
 				# encrypt_mess = encodeTripleDES(message_hmac, BitArray(uint = symmetric_key, length = 192))
@@ -230,7 +207,7 @@ def main():
 					return 0
 
 				if (int(data[-1]) != time):
-					print("SERVER: Repeated message detected, invalid time stamp! Closing ATM...")
+					print("CLIENT: Repeated message detected, invalid time stamp! Closing ATM...")
 					return 0
 
 				#print("got back: ", data)

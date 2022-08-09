@@ -168,57 +168,6 @@ def main():
 						print(data)
 					else:
 						
-						#print("got:", data)
-						# print(makeBlocks(data,64))
-						# decoded_mess = decodeTripleDES(makeBlocks(data,64), BitArray(uint = symmetric_key, length = 192))
-						# print(decoded_mess)
-						# ptext_mess = blocksToString(decoded_mess)
-						# #print("SERVER: Received", ptext_mess)
-						# listOfData = ptext_mess.split('.')
-						# #print("This is the transmission:", lis[0])
-						# # m = makeBlocks(lis[0].lower() + '.',1)
-						# # bit_m = ""
-						# # for i in range(len(m)):
-						# # 	bit_m += m[i].bin
-
-						# # message_hmac = HMAC(bit_m, hmac_key)
-                        
-						# # data = conn.recv(512)
-						# # data = data.decode('UTF-8', errors = "ignore")
-                        
-						# # signature = decodeTripleDES(makeBlocks(data,64), BitArray(uint = symmetric_key, length = 192))
-						# # signature = blocksToString(signature)
-                        
-						# # # if (RSA_verify(client_public, blocksToString(decoded_mess), blocksToString(signature))):
-						# # #       print("server failed to verify incoming MAC")
-						# # #       continue
-						# # print("This is message_hmac:",message_hmac, signature)
-						# # print("Hashing this value:", bit_m,"with this key:",hmac_key)
-						# # worked = True
-						# # for i in range(len(signature)):	
-						# # 	if message_hmac[i] != signature[i]:
-						# # 		print("SERVER: Received invalid MAC.")
-						# # 		worked = False
-						# # 		break
-
-						# # if worked == False:
-						# # 	continue
-						# lis = ptext_mess.split(".")
-						# print("decrypted:", lis)
-
-						# m = makeBlocks(lis[0].lower() + '.',1)
-						# bit_m = ""
-						# for i in range(len(m)):
-						# 	bit_m += m[i].bin
-
-						# message_hmac = HMAC(bit_m, hmac_key)
-
-						# worked = True
-						# for i in range(len(message_hmac)):	
-						# 	if message_hmac[i] != lis[1][i]:
-						# 		print("SERVER: Received invalid MAC.")
-						# 		worked = False
-						# 		break
 						worked, lis = read_packet(data, symmetric_key, hmac_key)
 						if (not worked):
 							print("SERVER: Failed to validate mac. Message corruption detected! Closing server...")
