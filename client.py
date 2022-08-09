@@ -6,7 +6,8 @@ import math
 import secrets
 
 from RSA import RSA_encrypt_sign, RSA_decrypt_sign
-
+from sha1 import *
+from DES import *
 def check_int(d_w):
 	st = "How much would you like to " + d_w + "?\n"
 	amount = input(st)
@@ -77,7 +78,7 @@ def main():
 					print("CLIENT: ERROR: Message not understood. Exiting...")
 					return 1
 				data = message.split()
-				if(len(data) != 1 or data[0] != "Success"):
+				if len(data) != 1 or data[0] != "Success":
 					print("ERROR: Incompatable securities. Exiting...")
 					return 1
 				print("CLIENT: Established security capabilities")
@@ -97,7 +98,7 @@ def main():
 				except:
 					print("CLIENT: ERROR: Message not understood. Exiting...")
 					return 1
-				if(nonce_bounceback != str(nonce)):
+				if nonce_bounceback != str(nonce):
 					print("ERROR: Incorrect server authentication. Exiting...")
 					return 1
 
@@ -119,6 +120,24 @@ def main():
 					return 1
 				s.sendall(msg_encrypted)
 
+				# Server_Hmac_key_exchange
+				data = s.recv(512)
+				try:
+					message = RSA_decrypt_sign(client_private, server_public, data)
+				except:
+					print("CLIENT: ERROR: Message not understood. Exiting...")
+					return 1
+				data = message.split()
+				hmac_key = int(data[0])
+
+				# Client_key_auth
+				try:
+					msg_encrypted = RSA_encrypt_sign(client_private, server_public, data[0])
+				except:
+					print("CLIENT: ERROR: Message not understood. Exiting...")
+					return 1
+				s.sendall(msg_encrypted)
+
 				#Server_verify_goodbye
 				data = s.recv(512)
 				try:
@@ -127,7 +146,7 @@ def main():
 					print("CLIENT: ERROR: Message not understood. Exiting...")
 					return 1
 				data = message.split()
-				if(len(data) != 1 or data[0] != "Success"):
+				if len(data) != 1 or data[0] != "Success":
 					print("ERROR: Fraudulent messaging detected. Exiting...")
 					return 1
 				print("CLIENT: Authenticated")
@@ -144,10 +163,10 @@ def main():
 				print("")
 				message = input("What would you like to do?\n").lower()
 				transmission = ""
-				if(message == "check"):
+				if message == "check":
 					print("CLIENT: Requested balance check")
 					transmission += "check "
-				elif(message == "deposit"):
+				elif message == "deposit":
 					print("CLIENT: Requested money deposit")
 					transmission += "deposit "
 					amount, is_int = check_int("deposit")
@@ -155,7 +174,7 @@ def main():
 						print("WARNING: Please enter an integer value")
 						continue
 					transmission += amount
-				elif(message == "withdraw"):
+				elif message == "withdraw":
 					print("CLIENT: Requested money withdraw")
 					transmission += "withdraw "
 					amount, is_int = check_int("withdraw")
@@ -163,18 +182,40 @@ def main():
 						print("WARNING: Please enter an integer value")
 						continue
 					transmission += amount
-				elif(message == "quit"):
+				elif message == "quit":
 					print("CLIENT: Atm requested quit. Exiting...")
 					transmission += "quit"
 				else:
 					print("WARNING: Unrecognized command")
 					continue
+				transmission+='.'
 
-				s.sendall(transmission.lower().encode('UTF-8', errors = "ignore"))
+				print("This is the transmission:", transmission.lower())
+				m = makeBlocks(transmission.lower(),1)
+				bit_m = ""
+				for i in range(len(m)):
+					bit_m += m[i].bin
+
+				#m = str(transmission.lower().encode('UTF-8', errors = "ignore"))
+				
+				#m = bin(int(''.join(str(ord(c)) for c in m)))[2:]
+			
+				message_hmac = HMAC(bit_m, hmac_key)
+				print("Hashing this value:", bit_m,"with this key:",hmac_key)
+				print("This is message_hmac:",message_hmac)
+				number = int(message_hmac,16)
+				length = math.ceil(number.bit_length() / 8)
+
+				#hmac_bytes = number.to_bytes(length, byteorder="little")
+				#mess = transmission.lower().encode('UTF-8', errors = "ignore") + hmac_bytes
+                
+				encrypt_mess = encodeTripleDES(transmission + message_hmac, BitArray(uint = symmetric_key, length = 192))
+				encrypt_mess_bytes = blocksToString(encrypt_mess).encode('UTF-8')
+				s.sendall(encrypt_mess_bytes)
 				data = s.recv(512).decode('UTF-8', errors = "ignore").split()
-				if(data[0] == "Quit"):
+				if data[0] == "Quit":
 					break
-				elif(data[0] == "Warning"):
+				elif data[0] == "Warning":
 					print("Received", data[0])
 					if(data[1] == "NEC"):
 						print("Client has insifficient capital to complete this withdrawl")

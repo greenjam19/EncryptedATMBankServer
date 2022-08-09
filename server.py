@@ -7,7 +7,8 @@ import random
 import math
 import secrets
 from bitstring import BitArray
-
+from sha1 import *
+from DES import *
 from RSA import RSA_encrypt_sign, RSA_decrypt_sign
 
 def main():
@@ -21,7 +22,8 @@ def main():
 	authenticated = False
 	# Key used for DES (setup)
 	symmetric_key = secrets.randbits(192)
-
+	# Key used for HMAC Encryption
+	hmac_key = secrets.randbits(64)
 	#######
 	#SETUP#
 	#######
@@ -113,6 +115,27 @@ def main():
 						returnable = "Failure"
 					else:
 						returnable = "Success"
+
+					#Server_HMAC_key_exchange
+					returnable = str(hmac_key)
+					try:
+						msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
+					except:
+						print("SERVER: ERROR: Message not understood. Exiting...")
+						return 1	
+					conn.sendall(msg_encrypted)
+					data = conn.recv(512)
+					try:
+						message = RSA_decrypt_sign(server_private, client_public, data)
+					except:
+						print("SERVER: ERROR: Message not understood. Exiting...")
+						return 1
+					data = message.split()
+					if(len(data) != 1 or data[0] != returnable):
+						returnable = "Failure"
+					else:
+						returnable = "Success"
+
 					#Server_verify_goodbye
 					try:
 						msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
@@ -134,9 +157,11 @@ def main():
 					####################
 
 					data = conn.recv(512)
+
 					if not data:
 						break
 					data = data.decode('UTF-8', errors = "ignore")
+					print("This is the initially received message:",data)
 					lis = data.split()
 					returnable = ""
 					if not authenticated:
@@ -146,7 +171,28 @@ def main():
 							print("SERVER: Received quit request from ATM. Exiting...")
 							returnable += "Quit"
 						else:
-							print("SERVER: Received", lis[0])
+							decoded_mess = decodeTripleDES(makeBlocks(lis[0],64), BitArray(uint = symmetric_key, length = 192))
+							ptext_mess = blocksToString(decoded_mess)
+							print("SERVER: Received", ptext_mess)
+							lis = ptext_mess.split('.')
+							print("This is the transmission:", lis[0])
+							m = makeBlocks(lis[0].lower() + '.',1)
+							bit_m = ""
+							for i in range(len(m)):
+								bit_m += m[i].bin
+
+							message_hmac = HMAC(bit_m, hmac_key)
+							print("This is message_hmac:",message_hmac,"and this is lis[1]:", lis)
+							print("Hashing this value:", bit_m,"with this key:",hmac_key)
+							worked = True
+							for i in range(len(message_hmac)):	
+								if message_hmac[i] != lis[1][i]:
+									print("SERVER: Received invalid MAC.")
+									worked = False
+									break
+							if worked == False:
+								continue
+							lis = lis[0].split()
 							if(lis[0] == "deposit"):
 								balance += int(lis[1])
 								returnable += "Success "
