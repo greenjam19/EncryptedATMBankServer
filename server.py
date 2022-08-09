@@ -18,8 +18,8 @@ def main():
 	# non-static variables
 	balance = 0
 	authenticated = False
-	# Key used for DES
-	symmetric_key = 0
+	# Key used for DES (setup)
+	symmetric_key = random.getrandbits(192)
 
 	#######
 	#SETUP#
@@ -71,12 +71,14 @@ def main():
 					#Server_hello
 					msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
 					conn.sendall(msg_encrypted)
+					if(returnable == "Failure"):
+						print("SERVER: Detected incompatablie client. Exiting...")
+						break
 
 					#Server_symmetric_key
-					returnable = str(random.getrandbits(192))
+					returnable = str(symmetric_key)
 					msg_encrypted = RSA_encrypt_sign(server_private, client_public, returnable)
 					conn.sendall(msg_encrypted)
-					symmetric_key = int(returnable)
 
 					data = conn.recv(512)
 					message = RSA_decrypt_sign(server_private, client_public, data)

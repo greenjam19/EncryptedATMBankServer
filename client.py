@@ -60,7 +60,7 @@ def main():
 
 				# Client_hello
 				# Usage <Hello/TLS/RSA/DES
-				msg = "Hello TLS RSA DES"
+				msg = "Hello TLS RSA 3DES"
 				msg_encrypted = RSA_encrypt_sign(client_private, server_public, msg)
 				s.sendall(msg_encrypted)
 
