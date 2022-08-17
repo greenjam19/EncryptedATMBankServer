@@ -1,0 +1,12 @@
+Jamarri Green (greenjam19):
+
+Explanatory Note:
+
+Let it be known that the original iterations of the files in this folder in particular are not our (Jamarri, Theodore, Sean) own. 
+They are a copy of the files pertaining to the encrypted bank system of a group we were to attempt to crack. The client.py and server.py 
+files are changed to currently check for one of many message evaluation errors/discrepancies (this one involving trying to quit out of the server/client) that we found 
+whilst studying the code. Currently, the resulting conclusion (error or no error) of any run will be written to the file: tally.txt.
+
+Furthermore, tally_100.txt is a file that contains the results of trying to quit out of the system on 100 separate ocassions in rapid succession on my own system. 
+
+---Jamarri Green
